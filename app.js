@@ -115,7 +115,6 @@ function printHadith(cardId) {
   const card = document.getElementById(cardId);
   if (!card) return;
 
-  // Berikan class aktif untuk isolasi elemen yang dicetak
   card.classList.add('printing-active');
   window.print();
   card.classList.remove('printing-active');
@@ -171,5 +170,32 @@ if (searchInput) {
   });
 }
 
-// Inisialisasi Aplikasi
-document.addEventListener('DOMContentLoaded', () => loadHadiths('bukhari'));
+// 8. Function Realtime Visitor Counter
+async function updateVisitorCount() {
+  const visitorElement = document.getElementById('visitorCount');
+  if (!visitorElement) return;
+
+  const BASE_VISITORS = 200; // Angka awal dasar
+  const NAMESPACE = 'fatur62-hadits-sahih';
+  const KEY = 'visits';
+
+  try {
+    const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);
+    if (res.ok) {
+      const data = await res.json();
+      const totalVisits = BASE_VISITORS + data.value;
+      visitorElement.textContent = totalVisits.toLocaleString('id-ID');
+    } else {
+      visitorElement.textContent = `${BASE_VISITORS}+`;
+    }
+  } catch (error) {
+    console.error('Error fetching visitor count:', error);
+    visitorElement.textContent = `${BASE_VISITORS}+`;
+  }
+}
+
+// Inisialisasi Aplikasi Saat Halaman Selesai Dimuat
+document.addEventListener('DOMContentLoaded', () => {
+  loadHadiths('bukhari');
+  updateVisitorCount();
+});
