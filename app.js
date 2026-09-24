@@ -36,7 +36,6 @@ async function loadHadiths(bookName = 'bukhari') {
     
     const data = await response.json();
     
-    // Validasi struktur JSON secara aman
     if (data && Array.isArray(data.hadiths)) {
       allHadiths = data.hadiths;
     } else if (Array.isArray(data)) {
@@ -47,10 +46,8 @@ async function loadHadiths(bookName = 'bukhari') {
 
     filteredHadiths = [...allHadiths];
 
-    // Reset input pencarian
     if (searchInput) searchInput.value = '';
 
-    // Tampilkan 20 hadits pertama
     renderHadiths(filteredHadiths.slice(0, 20));
   } catch (error) {
     console.error('Gagal memuat hadits:', error);
@@ -62,7 +59,7 @@ async function loadHadiths(bookName = 'bukhari') {
   }
 }
 
-// 2. Render Hadits ke Tampilan
+// 2. Render Hadits ke Tampilan (Lengkap dengan Tombol PDF/Cetak)
 function renderHadiths(list) {
   if (!hadithContainer) return;
 
@@ -77,21 +74,28 @@ function renderHadiths(list) {
 
   const bookTitle = currentBook === 'bukhari' ? 'Bukhari' : 'Muslim';
 
-  hadithContainer.innerHTML = list.map(item => {
+  hadithContainer.innerHTML = list.map((item, index) => {
     const number = item.number || item.id || '-';
     const arab = item.arab || item.ar || '';
     const idText = item.id || item.terjemah || '';
+    const cardId = `hadith-card-${index}`;
 
     return `
-      <div class="glass-card p-6 sm:p-8 rounded-2xl relative overflow-hidden transition hover:border-slate-700">
+      <div id="${cardId}" class="hadith-card-item glass-card p-6 sm:p-8 rounded-2xl relative overflow-hidden transition hover:border-slate-700">
         <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
           <span class="px-3 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800/50 text-xs font-bold uppercase tracking-wider">
             ${bookTitle} No. ${number}
           </span>
-          <button onclick="copyText('${encodeURIComponent(idText)}')" class="text-slate-400 hover:text-amber-400 text-xs font-medium flex items-center gap-1 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-            Salin
-          </button>
+          <div class="flex items-center gap-3 no-print">
+            <button onclick="copyText('${encodeURIComponent(idText)}')" class="text-slate-400 hover:text-amber-400 text-xs font-medium flex items-center gap-1 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              Salin
+            </button>
+            <button onclick="printHadith('${cardId}')" class="text-slate-400 hover:text-emerald-400 text-xs font-medium flex items-center gap-1 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+              PDF / Cetak
+            </button>
+          </div>
         </div>
 
         <p class="font-arabic text-2xl sm:text-3xl text-right text-amber-100/90 mb-6 leading-relaxed" dir="rtl">
@@ -106,33 +110,44 @@ function renderHadiths(list) {
   }).join('');
 }
 
-// 3. Switch Kitab (Bukhari <-> Muslim)
+// 3. Fungsi Cetak / Simpan PDF Spesifik Per Hadits
+function printHadith(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+
+  // Berikan class aktif untuk isolasi elemen yang dicetak
+  card.classList.add('printing-active');
+  window.print();
+  card.classList.remove('printing-active');
+}
+
+// 4. Switch Kitab (Bukhari <-> Muslim)
 function switchBook(bookName) {
   if (bookName === currentBook) return;
   loadHadiths(bookName);
 }
 
-// 4. Update Tampilan Tombol Aktif
+// 5. Update Tampilan Tombol Aktif
 function updateActiveButton() {
   if (!btnBukhari || !btnMuslim) return;
 
   if (currentBook === 'bukhari') {
-    btnBukhari.className = 'px-5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500';
-    btnMuslim.className = 'px-5 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700';
+    btnBukhari.className = 'px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500 flex items-center gap-2';
+    btnMuslim.className = 'px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700 flex items-center gap-2';
   } else {
-    btnMuslim.className = 'px-5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500';
-    btnBukhari.className = 'px-5 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700';
+    btnMuslim.className = 'px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500 flex items-center gap-2';
+    btnBukhari.className = 'px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700 flex items-center gap-2';
   }
 }
 
-// 5. Salin Teks
+// 6. Salin Teks
 function copyText(text) {
   if (!text) return;
   navigator.clipboard.writeText(decodeURIComponent(text));
   alert('Teks hadits berhasil disalin!');
 }
 
-// 6. Pencarian Responsif Instan
+// 7. Pencarian Responsif Instan
 let searchTimeout;
 if (searchInput) {
   searchInput.addEventListener('input', (e) => {
