@@ -183,14 +183,17 @@ async function updateVisitorCount() {
     const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);
     if (res.ok) {
       const data = await res.json();
+      // Angka riil bertambah 1 tiap ada pengunjung baru
       const totalVisits = BASE_VISITORS + data.value;
       visitorElement.textContent = totalVisits.toLocaleString('id-ID');
     } else {
-      visitorElement.textContent = `${BASE_VISITORS}+`;
+      // Jika API belum siap, tampilkan angka dasar tanpa tanda +
+      visitorElement.textContent = BASE_VISITORS;
     }
   } catch (error) {
     console.error('Error fetching visitor count:', error);
-    visitorElement.textContent = `${BASE_VISITORS}+`;
+    // Tampilkan angka dasar riil jika terjadi error jaringan
+    visitorElement.textContent = BASE_VISITORS;
   }
 }
 
@@ -199,3 +202,4 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHadiths('bukhari');
   updateVisitorCount();
 });
+
