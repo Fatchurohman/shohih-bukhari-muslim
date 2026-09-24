@@ -1,26 +1,35 @@
-// Mengambil data langsung dari CDN publik tepercaya
-const BUKHARI_URL = 'https://cdn.jsdelivr.net/gh/gadingnst/hadith-api@master/books/bukhari.json';
+// Endpoint CDN untuk kedua kitab
+const API_URLS = {
+  bukhari: 'https://cdn.jsdelivr.net/gh/gadingnst/hadith-api@master/books/bukhari.json',
+  muslim: 'https://cdn.jsdelivr.net/gh/gadingnst/hadith-api@master/books/muslim.json'
+};
 
+let currentBook = 'bukhari';
 let allHadiths = [];
 let filteredHadiths = [];
 
 // DOM Elements
 const searchInput = document.getElementById('searchInput');
 const hadithContainer = document.getElementById('hadithContainer');
+const btnBukhari = document.getElementById('btnBukhari');
+const btnMuslim = document.getElementById('btnMuslim');
 
-// 1. Fetch Data dari CDN dengan Error Handling dan Validasi Aman
-async function loadHadiths() {
+// 1. Fetch Data dari CDN Sesuai Kitab yang Dipilih
+async function loadHadiths(bookName = 'bukhari') {
   if (!hadithContainer) return;
+
+  currentBook = bookName;
+  updateActiveButton();
 
   hadithContainer.innerHTML = `
     <div class="text-center py-12 text-slate-400">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mb-3"></div>
-      <p class="text-sm">Memuat database Sahih Bukhari...</p>
+      <p class="text-sm">Memuat database Sahih ${bookName === 'bukhari' ? 'Bukhari' : 'Muslim'}...</p>
     </div>
   `;
 
   try {
-    const response = await fetch(BUKHARI_URL);
+    const response = await fetch(API_URLS[bookName]);
     if (!response.ok) {
       throw new Error(`HTTP Error Status: ${response.status}`);
     }
@@ -33,10 +42,13 @@ async function loadHadiths() {
     } else if (Array.isArray(data)) {
       allHadiths = data;
     } else {
-      throw new Error('Format data JSON tidak sesuai harapan.');
+      throw new Error('Format data JSON tidak sesuai.');
     }
 
     filteredHadiths = [...allHadiths];
+
+    // Reset input pencarian
+    if (searchInput) searchInput.value = '';
 
     // Tampilkan 20 hadits pertama
     renderHadiths(filteredHadiths.slice(0, 20));
@@ -44,7 +56,7 @@ async function loadHadiths() {
     console.error('Gagal memuat hadits:', error);
     hadithContainer.innerHTML = `
       <div class="glass-card p-6 rounded-xl text-red-400 text-center text-sm">
-        Gagal memuat data hadits dari CDN. Pastikan koneksi internet stabil atau coba muat ulang halaman.
+        Gagal memuat data hadits. Pastikan koneksi internet stabil.
       </div>
     `;
   }
@@ -63,6 +75,8 @@ function renderHadiths(list) {
     return;
   }
 
+  const bookTitle = currentBook === 'bukhari' ? 'Bukhari' : 'Muslim';
+
   hadithContainer.innerHTML = list.map(item => {
     const number = item.number || item.id || '-';
     const arab = item.arab || item.ar || '';
@@ -72,7 +86,7 @@ function renderHadiths(list) {
       <div class="glass-card p-6 sm:p-8 rounded-2xl relative overflow-hidden transition hover:border-slate-700">
         <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
           <span class="px-3 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800/50 text-xs font-bold uppercase tracking-wider">
-            Bukhari No. ${number}
+            ${bookTitle} No. ${number}
           </span>
           <button onclick="copyText('${encodeURIComponent(idText)}')" class="text-slate-400 hover:text-amber-400 text-xs font-medium flex items-center gap-1 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -92,14 +106,33 @@ function renderHadiths(list) {
   }).join('');
 }
 
-// 3. Salin Teks
+// 3. Switch Kitab (Bukhari <-> Muslim)
+function switchBook(bookName) {
+  if (bookName === currentBook) return;
+  loadHadiths(bookName);
+}
+
+// 4. Update Tampilan Tombol Aktif
+function updateActiveButton() {
+  if (!btnBukhari || !btnMuslim) return;
+
+  if (currentBook === 'bukhari') {
+    btnBukhari.className = 'px-5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500';
+    btnMuslim.className = 'px-5 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700';
+  } else {
+    btnMuslim.className = 'px-5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-sm shadow-md transition hover:bg-emerald-500';
+    btnBukhari.className = 'px-5 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold text-sm transition hover:bg-slate-700';
+  }
+}
+
+// 5. Salin Teks
 function copyText(text) {
   if (!text) return;
   navigator.clipboard.writeText(decodeURIComponent(text));
   alert('Teks hadits berhasil disalin!');
 }
 
-// 4. Pencarian Responsif Instan
+// 6. Pencarian Responsif Instan
 let searchTimeout;
 if (searchInput) {
   searchInput.addEventListener('input', (e) => {
@@ -124,4 +157,4 @@ if (searchInput) {
 }
 
 // Inisialisasi Aplikasi
-document.addEventListener('DOMContentLoaded', loadHadiths);
+document.addEventListener('DOMContentLoaded', () => loadHadiths('bukhari'));
