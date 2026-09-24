@@ -75,14 +75,26 @@
         Kumpulan Utuh Sahih Bukhari & Sahih Muslim
       </p>
 
-      <div class="mt-4 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/60 shadow-inner">
-        <span class="relative flex h-3 w-3">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
-        </span>
-        <span class="text-xs sm:text-sm font-mono tracking-wide text-slate-300">
-          developer : <strong class="text-emerald-400 font-bold">fatur62</strong>
-        </span>
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+        <!-- Identitas Developer + Lampu Kelap-Kelip (Live Indicator) -->
+        <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/60 shadow-inner">
+          <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+          </span>
+          <span class="text-xs sm:text-sm font-mono tracking-wide text-slate-300">
+            developer : <strong class="text-emerald-400 font-bold">fatur62</strong>
+          </span>
+        </div>
+
+        <!-- Indicator Live Visitor Counter -->
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-700/60 shadow-inner text-xs text-slate-300">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+          </svg>
+          <span>Pengunjung: <strong id="visitorCount" class="text-emerald-400 font-bold">...</strong></span>
+        </div>
       </div>
 
     </div>
