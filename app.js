@@ -170,30 +170,37 @@ if (searchInput) {
   });
 }
 
-// 8. Function Realtime Visitor Counter
+// 8. Function Realtime Visitor Counter (Menggunakan CounterAPI.dev)
 async function updateVisitorCount() {
   const visitorElement = document.getElementById('visitorCount');
   if (!visitorElement) return;
 
-  const BASE_VISITORS = 200; // Angka awal dasar
-  const NAMESPACE = 'fatur62-hadits-sahih';
+  const BASE_VISITORS = 200; // Angka dasar awal
+  const NAMESPACE = 'fatur62_hadits_sahih';
   const KEY = 'visits';
 
   try {
-    const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);
+    // Memanggil API penghitung pengunjung yang lebih stabil
+    const res = await fetch(`https://api.counterapi.dev/v1/${NAMESPACE}/${KEY}/up`);
     if (res.ok) {
       const data = await res.json();
-      // Angka riil bertambah 1 tiap ada pengunjung baru
-      const totalVisits = BASE_VISITORS + data.value;
+      const totalVisits = BASE_VISITORS + (data.count || 1);
+      
+      // Simpan ke localStorage sebagai cadangan offline
+      localStorage.setItem('fatur_local_visits', totalVisits);
       visitorElement.textContent = totalVisits.toLocaleString('id-ID');
     } else {
-      // Jika API belum siap, tampilkan angka dasar tanpa tanda +
-      visitorElement.textContent = BASE_VISITORS;
+      throw new Error('API Counter tidak merespon.');
     }
   } catch (error) {
-    console.error('Error fetching visitor count:', error);
-    // Tampilkan angka dasar riil jika terjadi error jaringan
-    visitorElement.textContent = BASE_VISITORS;
+    console.warn('Menggunakan fallback lokal untuk pengunjung:', error);
+    
+    // Sistem Fallback: Otomatis menambah hit lokal jika API terhalang CORS/Offline
+    let localCount = parseInt(localStorage.getItem('fatur_local_visits') || BASE_VISITORS);
+    localCount += 1;
+    localStorage.setItem('fatur_local_visits', localCount);
+    
+    visitorElement.textContent = localCount.toLocaleString('id-ID');
   }
 }
 
@@ -202,4 +209,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHadiths('bukhari');
   updateVisitorCount();
 });
+
 
